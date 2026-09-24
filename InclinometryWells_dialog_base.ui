@@ -1,0 +1,977 @@
+<ui version="4.0" >
+ <class>InclinometryWellsDialogBase</class>
+ <widget class="QDialog" name="InclinometryWellsDialogBase" >
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>601</width>
+    <height>688</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>470</width>
+    <height>570</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>770</width>
+    <height>970</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Inclinometr</string>
+  </property>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>584</width>
+     <height>641</height>
+    </rect>
+   </property>
+   <property name="toolTipDuration">
+    <number>-5</number>
+   </property>
+   <property name="currentIndex">
+    <number>2</number>
+   </property>
+   <widget class="QWidget" name="tabSettings">
+    <attribute name="icon">
+     <iconset>
+      <normaloff>ui/ico/settings.png</normaloff>ui/ico/settings.png</iconset>
+    </attribute>
+    <attribute name="title">
+     <string>Настройки</string>
+    </attribute>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <widget class="QLabel" name="tabSettingsWorkdirLbl">
+         <property name="text">
+          <string>Рабочая папка</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QgsFileWidget" name="tabSettingsWorkdir">
+         <property name="storageMode">
+          <enum>QgsFileWidget::GetDirectory</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="tabSettingsWellheadGbox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>81</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Позиции / Устья</string>
+       </property>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>521</width>
+          <height>63</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_10">
+         <item>
+          <widget class="QgsMapLayerComboBox" name="tabSettingsWellheadMLCBox"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="tabSettingsWellheadBtn">
+           <property name="text">
+            <string>Создать слой</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="tabSettingsWelltargetGbox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>81</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Цели</string>
+       </property>
+       <widget class="QWidget" name="layoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>521</width>
+          <height>63</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <item>
+          <widget class="QgsMapLayerComboBox" name="tabSettingsTargetsMLCBox"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="tabSettingsTargetsBtn">
+           <property name="text">
+            <string>Создать слой</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="tabSettingsWellboreGbox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>81</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Стволы</string>
+       </property>
+       <widget class="QWidget" name="layoutWidget_3">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>521</width>
+          <height>63</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_12">
+         <item>
+          <widget class="QgsMapLayerComboBox" name="tabSettingsBoresMLCBox"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="tabSettingsBoresBtn">
+           <property name="text">
+            <string>Создать слой</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>254</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="tabSettingsWellheadGoBtn">
+       <property name="text">
+        <string>К позициям/устьям</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="tabWellheads">
+    <attribute name="title">
+     <string>Позиция</string>
+    </attribute>
+    <layout class="QVBoxLayout" name="verticalLayout_7">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_5" stretch="1,5,2">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,2">
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Система координат</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidgetWellHead">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnSelectWellHead">
+           <property name="text">
+            <string>Выбрать на карте</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="grbWellHeadInfo">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="title">
+          <string>Информация по устью</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QGroupBox" name="tabWellheadsCRSGbox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>77</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Какие координаты использовать для расчетов:</string>
+            </property>
+            <widget class="QRadioButton" name="tabWellheadsCRSValueBtn">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="geometry">
+              <rect>
+               <x>20</x>
+               <y>50</y>
+               <width>251</width>
+               <height>17</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Координаты из атрибутов точки</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+            <widget class="QRadioButton" name="tabWellheadsCRSMapBtn">
+             <property name="geometry">
+              <rect>
+               <x>20</x>
+               <y>20</y>
+               <width>201</width>
+               <height>17</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Координаты из геометрии точки</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
+              <item>
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>Выбранное устье</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="txtWellHeadName">
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,2">
+              <item>
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Север</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="txtWellHeadNorth"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,2">
+              <item>
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Восток</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="txtWellHeadEast"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,2">
+              <item>
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Альтитуда земли, м</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="txtWellHeadGround"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,2">
+              <item>
+               <widget class="QLabel" name="label_11">
+                <property name="text">
+                 <string>Альтитуда ротора, м</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="txtWellHeadRotor"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,2">
+              <item>
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Лицензионный уч.</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="txtWellHeadLicense">
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tabWellheadInclGoBtn">
+            <property name="text">
+             <string>К инклинометрии</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="tabIncls">
+    <attribute name="title">
+     <string>Инклинометрия</string>
+    </attribute>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <item>
+      <widget class="QPushButton" name="btnLoadInclinometry">
+       <property name="toolTip">
+        <string comment="Excel формата: MD, Зенит, Азимут"/>
+       </property>
+       <property name="text">
+        <string>Загрузка инклинометрии (из Excel: MD, Зенит, Азимут)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="1,3">
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="minimumSize">
+          <size>
+           <width>57</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Тип азимута</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cmbAzimuthType"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>ε зенит, °</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txtErrZenith"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>ε азимут, °</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txtErrAzimuth"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="txtDeltaDelta">
+         <property name="text">
+          <string>Δδ, °</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txtErrMagneticAzimuth"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QTableWidget" name="tableInclinometry">
+         <property name="sortingEnabled">
+          <bool>false</bool>
+         </property>
+         <property name="columnCount">
+          <number>27</number>
+         </property>
+         <column>
+          <property name="text">
+           <string>MD, м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Зенит, °</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Азимут, °</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Дата</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Север, м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Восток, м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>TVDSS, м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Сближение меридианов, °</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Магнитное склонение, °</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Дирекционный угол, °</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>ΔСевер, м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>ΔВосток, м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>ΔTVDSS, м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Север (верх), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Восток (верх), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>TVDSS (верх), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Север (лево), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Восток (лево), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>TVDSS (лево), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Север (низ), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Восток (низ), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>TVDSS (низ), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Север (право), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Восток (право), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>TVDSS (право), м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>a, м</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>b, м</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnCalculateInclinometry">
+         <property name="text">
+          <string>Расчет инклинометрии</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnExportExcel">
+       <property name="text">
+        <string>Выгрузить в Excel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="tabInclTargetGoBtn">
+       <property name="text">
+        <string>К целям</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="tabTargets">
+    <attribute name="title">
+     <string>Цели</string>
+    </attribute>
+    <widget class="Line" name="line_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>421</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_15">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>431</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Выбор системы координат</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>421</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="0,0">
+      <item>
+       <widget class="QPushButton" name="btnSelectTarget">
+        <property name="text">
+         <string>Выбрать на карте</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnRemoveTarget">
+        <property name="text">
+         <string>Удалить цель</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="Line" name="line_4">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>421</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_16">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>421</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Выбор и удаление целей</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_4">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>421</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="0">
+      <item>
+       <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidgetTarget"/>
+      </item>
+     </layout>
+    </widget>
+    <widget class="Line" name="line_5">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>250</y>
+       <width>421</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QTableWidget" name="tableTargets">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>271</y>
+       <width>561</width>
+       <height>291</height>
+      </rect>
+     </property>
+     <property name="columnCount">
+      <number>15</number>
+     </property>
+     <attribute name="horizontalHeaderCascadingSectionResizes">
+      <bool>false</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>ID</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Пласт</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Имя</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Север</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Восток</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>TVD</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>TVDSS</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>MD</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Север_факт</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Восток_факт</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>R_факт</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>TVDSS_факт</string>
+      </property>
+     </column>
+     <column/>
+     <column/>
+     <column/>
+    </widget>
+    <widget class="QGroupBox" name="tabTargetsCRSGbox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>170</y>
+       <width>511</width>
+       <height>80</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Какие координаты использовать для расчетов:</string>
+     </property>
+     <widget class="QRadioButton" name="tabTargetsCRSValueBtn">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>50</y>
+        <width>251</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Координаты из атрибутов точки</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="tabTargetsCRSMapBtn">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>201</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Координаты из геометрии точки</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QPushButton" name="btnCalculateDeviations">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>580</y>
+       <width>558</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Расчет отклонений</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFileWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsfilewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsmaplayercombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsProjectionSelectionWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsprojectionselectionwidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
