@@ -111,13 +111,13 @@ class InclinometryWellsDialog(QtWidgets.QDialog, FORM_CLASS):
         # =====================================================
 
         self.tabTarget = TabTarget(self)
-        # self.btnSelectTarget.clicked.connect(self.tabTarget.selectTarget)
-        # self.mQgsProjectionSelectionWidgetTarget.crsChanged.connect(self.tabTarget.targetCrsChanged)
+        self.btnSelectTarget.clicked.connect(self.tabTarget.selectTarget)
+        self.mQgsProjectionSelectionWidgetTarget.crsChanged.connect(self.tabTarget.targetCrsChanged)
 
         # =====================================================
         # Вкладка: Инклинометрия
         # =====================================================
 
         self.tabInclinometry = TabInclinometry(self)
-        # self.tabInclTargetGoBtn.clicked.connect(self.tabInclinometry.targetTabActivate)
+        self.tabInclTargetGoBtn.clicked.connect(self.tabInclinometry.targetTabActivate)
 

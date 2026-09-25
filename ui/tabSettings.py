@@ -97,6 +97,8 @@ class TabSettings:
         1: "Подошва проект",
         2: "Кровля факт",
         3: "Подошва факт",
+        4: "Проектная цель",
+        5: "Проектная инклинометрия",
     }
 
     WELLBORE_TYPES = {
@@ -272,51 +274,86 @@ class TabSettings:
         del writer
         return True
 
+
     def _create_type_layer(self, layer_name, values):
-        """Создаёт справочник типов и заполняет его."""
-        existing_layer = self._load_gpkg_layer(layer_name)
-
-        if existing_layer is not None:
-            # print(f"{layer_name} уже существует в БД.")
-            return existing_layer
-
-        fields = self._create_fields(self.TYPE_FIELDS)
-
-        if not self._create_gpkg_layer(
-            layer_name,
-            fields,
-            QgsWkbTypes.NoGeometry,
-        ):
-            return None
+        """Создаёт справочник типов или заполняет существующий, если он пуст."""
 
         layer = self._load_gpkg_layer(layer_name)
+
+        # Если таблицы нет — создаём её
+        if layer is None:
+            fields = self._create_fields(self.TYPE_FIELDS)
+
+            if not self._create_gpkg_layer(
+                layer_name,
+                fields,
+                QgsWkbTypes.NoGeometry,
+            ):
+                return None
+
+            layer = self._load_gpkg_layer(layer_name)
 
         if layer is None:
             QMessageBox.critical(
                 self.tab,
                 "Ошибка",
-                f"Слой {layer_name} создан, "
-                "но не удалось его загрузить.",
+                f"Не удалось загрузить справочник {layer_name}.",
             )
             return None
 
-        layer.startEditing()
+        # Если справочник уже заполнен — ничего не меняем
+        if layer.featureCount() > 0:
+            return layer
+
+        # Проверяем структуру таблицы
+        if (
+            layer.fields().indexOf("id") == -1
+            or layer.fields().indexOf("name") == -1
+        ):
+            QMessageBox.critical(
+                self.tab,
+                "Ошибка",
+                f"В справочнике {layer_name} отсутствуют поля id или name.",
+            )
+            return None
+
+        # Заполняем пустой справочник
+        if not layer.startEditing():
+            QMessageBox.critical(
+                self.tab,
+                "Ошибка",
+                f"Не удалось начать редактирование {layer_name}:\n"
+                f"{layer.commitErrors()}",
+            )
+            return None
 
         for type_id, type_name in values.items():
             feature = QgsFeature(layer.fields())
             feature["id"] = type_id
             feature["name"] = type_name
-            layer.addFeature(feature)
+
+            if not layer.addFeature(feature):
+                layer.rollBack()
+                QMessageBox.critical(
+                    self.tab,
+                    "Ошибка",
+                    f"Не удалось добавить запись в {layer_name}.",
+                )
+                return None
 
         if not layer.commitChanges():
-            QMessageBox.warning(
-                self.tab,
-                "Предупреждение",
-                f"Не удалось сохранить справочник {layer_name}.",
-            )
+            errors = "\n".join(layer.commitErrors())
+            layer.rollBack()
 
-        # print(f"{layer_name} создан и заполнен.")
-        return layer
+            QMessageBox.critical(
+                self.tab,
+                "Ошибка сохранения",
+                f"Не удалось сохранить справочник {layer_name}:\n{errors}",
+            )
+            return None
+
+        # Перезагружаем слой после сохранения
+        return self._load_gpkg_layer(layer_name)
 
     # ------------------------------------------------------------------
     # Type fields

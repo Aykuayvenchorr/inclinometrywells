@@ -1,0 +1,35 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Дневная поверхность (Земля) -->
+  <path d="M4 22H60" stroke="black" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Ствол искривленной скважины (Труба) -->
+  <path d="M16 22Q16 38 32 46T52 52" stroke="#FFA05A" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M16 22Q16 38 32 46T52 52" stroke="black" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- Линия вертикали для обозначения угла инклинометрии -->
+  <path d="M32 22V58" stroke="black" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+  <!-- Буровая вышка на поверхности (в стиле вашей иконки) -->
+  <path d="M6 22L13 4" stroke="black" stroke-width="2" stroke-linecap="round"/>
+  <path d="M26 22L19 4" stroke="black" stroke-width="2" stroke-linecap="round"/>
+  <path d="M13 4H19" stroke="black" stroke-width="2" stroke-linecap="round"/>
+  <path d="M11 13H21" stroke="black" stroke-width="1.5"/>
+  <path d="M6 22L21 13" stroke="black" stroke-width="1.5"/>
+  <path d="M26 22L11 13" stroke="black" stroke-width="1.5"/>
+  
+  <!-- Устье скважины (Вход) -->
+  <circle cx="16" cy="22" r="3" fill="#D4B1FF" stroke="black" stroke-width="2"/>
+
+  <!-- Инклинометрический датчик на забое (Внутри ствола) -->
+  <g transform="translate(43, 49)">
+    <circle cx="0" cy="0" r="5" fill="#D4B1FF" stroke="black" stroke-width="2"/>
+    <!-- Маятник/стрелка прибора внутри -->
+    <path d="M0 0V3" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Сектор зенитного угла наклона (Альфа) -->
+  <path d="M32 36A14 14 0 0 1 42 42" stroke="#b91c1c" stroke-width="2" fill="none"/>
+  
+  <!-- Декоративный маркер угла (маленькая стрелочка) -->
+  <path d="M40 39L43 43L39 44" fill="black"/>
+</svg>

@@ -58,6 +58,7 @@ class TabTarget:
     PROJECT_TO_FACT_TYPE = {
         0: 2,  # Кровля проект -> Кровля факт
         1: 3,  # Подошва проект -> Подошва факт
+        4: 5,  # Проектная цель -> Проектная инклинометрия
     }
 
     def __init__(self, dialog):
@@ -1251,7 +1252,7 @@ class TabTarget:
         """Находит проектную цель по ID."""
 
         request = QgsFeatureRequest().setFilterExpression(
-            f'"id" = {target_id} AND "type" IN (0, 1)'
+            f'"id" = {target_id} AND "type" IN (0, 1, 4)'
         )
 
         return next(
