@@ -1,6 +1,7 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>InclinometryWellsDialogBase</class>
- <widget class="QDialog" name="InclinometryWellsDialogBase" >
+ <widget class="QDialog" name="InclinometryWellsDialogBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -43,7 +44,7 @@
     <number>-5</number>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="tabSettings">
     <attribute name="icon">
@@ -340,7 +341,7 @@
               <item>
                <widget class="QLineEdit" name="txtWellHeadName">
                 <property name="readOnly">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -414,13 +415,20 @@
               <item>
                <widget class="QLineEdit" name="txtWellHeadLicense">
                 <property name="readOnly">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
              </layout>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tabWellheadAdd">
+            <property name="text">
+             <string>Добавить позицию/устье</string>
+            </property>
+           </widget>
           </item>
           <item>
            <spacer name="verticalSpacer">
@@ -950,6 +958,32 @@
      </property>
      <property name="text">
       <string>Расчет отклонений</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnAddTargetRow">
+     <property name="geometry">
+      <rect>
+       <x>530</x>
+       <y>250</y>
+       <width>31</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnAddTarget">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>250</y>
+       <width>91</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Добавить цели</string>
      </property>
     </widget>
    </widget>

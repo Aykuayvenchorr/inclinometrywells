@@ -1,7 +1,7 @@
 from math import sqrt
 
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import QTimer
+from qgis.PyQt.QtCore import QTimer, Qt
 from qgis.PyQt.QtWidgets import QMessageBox
 
 from qgis.core import (
@@ -106,6 +106,12 @@ class TabTarget:
 
         self.tab.btnCalculateDeviations.clicked.connect(
             self.calculateDeviations
+        )
+        self.tab.btnAddTargetRow.clicked.connect(
+            self.addEmptyTargetRow
+        )
+        self.tab.btnAddTarget.clicked.connect(
+            self.addTargetsToLayer
         )
 
     def _initializeWidgets(self):
@@ -1516,3 +1522,224 @@ class TabTarget:
         print("Геометрия:", feature.geometry().asWkt())
         print("Ошибка provider:", provider_error)
         print("=" * 40)
+
+
+    def addEmptyTargetRow(self):
+        """Добавляет пустую строку для ручного ввода новой цели."""
+
+        table = self.tab.tableTargets
+
+        row = table.rowCount()
+        table.insertRow(row)
+
+        # ID пока пустой.
+        # Настоящий ID будет назначен при сохранении цели.
+        self._setTableItem(table, row, self.COL_ID, "")
+        self._setTableItem(table, row, self.COL_STRATUM, "")
+        self._setTableItem(table, row, self.COL_NAME, "")
+        self._setTableItem(table, row, self.COL_NORTH, "")
+        self._setTableItem(table, row, self.COL_EAST, "")
+        self._setTableItem(table, row, self.COL_TVD, "")
+        self._setTableItem(table, row, self.COL_TVDSS, "")
+        self._setTableItem(table, row, self.COL_MD, "")
+        self._setTableItem(table, row, self.COL_NORTH_FACT, "")
+        self._setTableItem(table, row, self.COL_EAST_FACT, "")
+        self._setTableItem(table, row, self.COL_R_FACT, "")
+        self._setTableItem(table, row, self.COL_TVDSS_FACT, "")
+
+        # Делаем строку редактируемой
+        for column in range(table.columnCount()):
+            item = table.item(row, column)
+
+            if item is None:
+                item = QtWidgets.QTableWidgetItem()
+                table.setItem(row, column, item)
+
+            item.setFlags(
+                item.flags()
+                | Qt.ItemFlag.ItemIsEditable
+            )
+
+        # ID и фактические значения пользователь не редактирует
+        for column in (
+            self.COL_ID,
+            self.COL_NORTH_FACT,
+            self.COL_EAST_FACT,
+            self.COL_R_FACT,
+            self.COL_TVDSS_FACT,
+        ):
+            item = table.item(row, column)
+
+            if item is not None:
+                item.setFlags(
+                    item.flags()
+                    & ~Qt.ItemFlag.ItemIsEditable
+                )
+
+        # Выбираем новую строку
+        table.selectRow(row)
+
+        # Сразу ставим курсор в название
+        table.setCurrentCell(row, self.COL_NAME)
+
+        item = table.item(row, self.COL_NAME)
+
+        if item is not None:
+            table.editItem(item)
+
+    def _getTableText(self, row, column):
+        """Возвращает текст из ячейки таблицы."""
+
+        item = self.tab.tableTargets.item(
+            row,
+            column
+        )
+
+        if item is None:
+            return ""
+
+        return item.text().strip()
+
+
+    def _toFloatOrNone(self, value):
+        """Преобразует текст в float или возвращает None."""
+
+        if not value:
+            return None
+
+        try:
+            return float(
+                value.replace(",", ".")
+            )
+        except ValueError:
+            return None
+
+
+    def addTargetsToLayer(self):
+        """Добавляет все цели из таблицы как новые объекты welltarget."""
+
+        table = self.tab.tableTargets
+
+        if table.rowCount() == 0:
+            QMessageBox.warning(
+                self.tab,
+                "Добавление целей",
+                "В таблице нет целей."
+            )
+            return
+
+        layer = self.tab.tabSettingsTargetsMLCBox.currentLayer()
+
+        if layer is None:
+            QMessageBox.warning(
+                self.tab,
+                "Добавление целей",
+                "Не выбран слой welltarget."
+            )
+            return
+
+        self.layerTarget = layer
+
+        features = []
+        errors = []
+
+        # Первый свободный ID
+        next_id = self._getNextTargetId(layer)
+
+        for row in range(table.rowCount()):
+            stratum = self._getTableText(row, self.COL_STRATUM)
+            name = self._getTableText(row, self.COL_NAME)
+            north_text = self._getTableText(row, self.COL_NORTH)
+            east_text = self._getTableText(row, self.COL_EAST)
+            tvd_text = self._getTableText(row, self.COL_TVD)
+            tvdss_text = self._getTableText(row, self.COL_TVDSS)
+
+            if not name:
+                errors.append(f"Строка {row + 1}: не указано название")
+                continue
+            if not north_text or not east_text:
+                errors.append(f"Строка {row + 1}: не указаны координаты")
+                continue
+
+            try:
+                north = float(north_text.replace(",", "."))
+                east = float(east_text.replace(",", "."))
+            except ValueError:
+                errors.append(f"Строка {row + 1}: некорректные координаты")
+                continue
+
+            tvd = self._toFloatOrNone(tvd_text)
+            tvdss = self._toFloatOrNone(tvdss_text)
+
+            feature = QgsFeature(layer.fields())
+
+            feature["id"] = next_id
+            feature["stratum"] = stratum
+            feature["name"] = name
+            feature["north"] = north
+            feature["east"] = east
+
+            if tvd is not None:
+                feature["tvd"] = tvd
+
+            if tvdss is not None:
+                feature["tvdss"] = tvdss
+
+            # CRS координат таблицы
+            if (self.crsCurrentTarget and self.crsCurrentTarget.isValid()):
+                feature["crs_text"] = (self.crsCurrentTarget.authid())
+
+            # Тип цели
+            feature["type"] = 4
+
+            geometry = self._createTargetGeometry(layer, east, north)
+
+            if geometry.isNull():
+                errors.append(f"Строка {row + 1}: не удалось создать геометрию")
+                continue
+
+            feature.setGeometry(geometry)
+            features.append(feature)
+            next_id += 1
+
+        # ---------------------------------
+        # Если есть ошибки
+        # ---------------------------------
+
+        if errors:
+            QMessageBox.warning(
+                self.tab,
+                "Проверка целей",
+                "Исправь следующие строки:\n\n"
+                + "\n".join(errors)
+            )
+            return
+
+        if not features:
+            return
+
+        if not layer.isEditable():
+            layer.startEditing()
+
+        success = layer.addFeatures(features)
+        
+        if not success:
+            layer.rollBack()
+            QMessageBox.critical(self.tab, "Ошибка", "Не удалось добавить цели в слой welltarget.")
+            return
+
+        if not layer.commitChanges():
+            QMessageBox.critical(
+                self.tab,
+                "Ошибка",
+                "Не удалось сохранить цели."
+            )
+            return
+
+        layer.triggerRepaint()
+
+        QMessageBox.information(
+            self.tab,
+            "Цели добавлены",
+            f"Добавлено целей: {len(features)}"
+        )

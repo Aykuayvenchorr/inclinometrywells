@@ -5,6 +5,9 @@ from qgis.core import (
     QgsCoordinateTransform,
     QgsPointXY,
     QgsCoordinateReferenceSystem,
+    QgsFeature, 
+    QgsGeometry,
+    QgsVectorLayer,
 )
 
 from qgis.gui import QgsMapToolIdentifyFeature
@@ -722,3 +725,96 @@ class TabWellhead:
         self.tab.tabWellheadInclGoBtn.setEnabled(
             enabled
         )
+
+
+    def _get_next_feature_id(self, layer: QgsVectorLayer) -> int:
+        """Возвращает следующий свободный числовой ID."""
+
+        ids = []
+
+        for feature in layer.getFeatures():
+            value = feature["id"]
+
+            if value is None:
+                continue
+
+            try:
+                ids.append(int(value))
+            except (TypeError, ValueError):
+                continue
+
+        return max(ids, default=0) + 1
+
+    def wellheadAdd(self):
+        """Добавляет новую позицию/устье в слой wellhead"""
+        
+        layer = self.tab.tabSettingsWellheadMLCBox.currentLayer()
+        crs = self.tab.mQgsProjectionSelectionWidgetWellHead.crs()
+
+        north_text = self.tab.txtWellHeadNorth.text().strip()
+        east_text = self.tab.txtWellHeadEast.text().strip()
+
+        if not north_text or not east_text:
+            self.showWarning("Ошибка", "Заполните координаты востока и севера.")
+            return
+
+        try:
+            east = float(east_text)
+            north = float(north_text)
+
+        except (TypeError, ValueError):
+            self.showWarning("Ошибка", "Координаты east и north должны быть числовыми.")
+            return
+
+        name = self.tab.txtWellHeadName.text().strip()
+        ground_text = self.tab.txtWellHeadGround.text().strip()
+        rotor_text = self.tab.txtWellHeadRotor.text().strip()
+        license = self.tab.txtWellHeadLicense.text().strip()
+
+        if not name:
+            self.showWarning("Ошибка", "Укажите название позиции / устья.")
+            return
+
+        try:
+            alt_ground = (float(ground_text) if ground_text else 0.0)
+            alt_rotor = (float(rotor_text) if rotor_text else 0.0)
+
+        except (TypeError, ValueError):
+            self.showWarning("Ошибка", "Альтитуды земли и ротора должны быть числовыми.")
+            return
+
+        layer_crs = layer.crs()
+        point = self.transformCoordinates(east, north, crs, layer_crs)
+
+        feature = QgsFeature(layer.fields())
+
+        feature["id"] = self._get_next_feature_id(layer)
+        feature["name"] = name
+        feature["type"] = 0
+        feature["alt_ground"] = alt_ground
+        feature["alt_rotor"] = alt_rotor
+        feature["lic"] = license
+        feature["rel"] = True
+        feature["east"] = east
+        feature["north"] = north
+        feature["crs_text"] = crs.authid()
+        
+
+        feature.setGeometry(QgsGeometry.fromPointXY(point))
+
+        if not layer.isEditable():
+            layer.startEditing()
+
+        success, added_features = layer.dataProvider().addFeatures([feature])
+
+        if not success:
+            self.showWarning("Ошибка", "Не удалось добавить новую позицию в слой wellhead.")
+            return
+
+        layer.updateExtents()
+        layer.triggerRepaint()
+
+        new_feature = (added_features[0] if added_features else None)
+
+        if new_feature is not None:
+            self.tab.selectedWellHead = new_feature

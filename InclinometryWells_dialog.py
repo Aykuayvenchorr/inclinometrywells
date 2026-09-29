@@ -105,6 +105,8 @@ class InclinometryWellsDialog(QtWidgets.QDialog, FORM_CLASS):
         # Текущая система координат для расчетов
         self.crsOutputWellHead = self.tabWellhead.getCurrentCrs()
         self.tabWellheadInclGoBtn.clicked.connect(self.tabWellhead.inclTabActivate)
+        # Добавляем новую позицию/устье в слой wellhead
+        self.tabWellheadAdd.clicked.connect(self.tabWellhead.wellheadAdd)
 
         # =====================================================
         # Вкладка: Цели

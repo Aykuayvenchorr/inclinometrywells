@@ -706,6 +706,9 @@ class TabInclinometry:
                 i,
                 IncCol["MD"],
             )
+            azimuth_grid = Geodezy.deg2rad(
+                self._get_float(i, IncCol["GRID_AZIMUTH"])
+            )
 
             # В исходной логике l равен текущей MD.
             l = md2
@@ -725,6 +728,7 @@ class TabInclinometry:
                 azimuth_error,
                 zenith_error,
                 magnetic_azimuth_error,
+                azimuth=azimuth_grid,
             )
 
             (
@@ -823,17 +827,12 @@ class TabInclinometry:
 
         # Эллипс неопределённости.
         self.calculateErrorPoints(
-            zenith_error=Geodezy.deg2rad(
-                float(
-                    self.tab.txtErrZenith.text()
-                )
-            ),
-            azimuth_error=Geodezy.deg2rad(
-                float(
-                    self.tab.txtErrAzimuth.text()
-                )
-            ),
+            zenith_error=Geodezy.deg2rad(float(self.tab.txtErrZenith.text())),
+            azimuth_error=Geodezy.deg2rad(float(self.tab.txtErrAzimuth.text())),
         )
+
+        # # 5. Четыре траектории ошибок
+        self.createErrorWellbores()
 
     # ------------------------------------------------------------------
     # Работа с вкладкой целей
@@ -1314,3 +1313,319 @@ class TabInclinometry:
                 max_length + 2,
                 40,
             )
+
+    def _build_error_wellbore_geometry(self, north, east, tvdss):
+        """
+        Создаёт LineStringZ из расчётных точек.
+        """
+        points = []
+        # Начальная точка — устье скважины.
+        north0 = self._get_float(0, IncCol["NORTH"])
+        east0 = self._get_float(0, IncCol["EAST"])
+        tvdss0 = self._get_float(0, IncCol["TVDSS"])
+
+        points.append(QgsPoint(east0, north0, tvdss0))
+
+        for row in range(1, self.rows):
+            try:
+                north_err = self._get_float(
+                    row,
+                    IncCol[north],
+                )
+
+                east_err = self._get_float(
+                    row,
+                    IncCol[east],
+                )
+
+                tvdss_err = self._get_float(
+                    row,
+                    IncCol[tvdss],
+                )
+
+            except (TypeError, ValueError):
+                continue
+
+            points.append(
+                QgsPoint(
+                    east_err,
+                    north_err,
+                    tvdss_err,
+                )
+            )
+
+        # QgsPoint содержит Z, поэтому QgsLineString
+        # создаёт LineStringZ.
+        line = QgsLineString(points)
+
+        return QgsGeometry(line)
+
+    def _fill_error_wellbore_attributes(
+        self,
+        feature: QgsFeature,
+        layer: QgsVectorLayer,
+        type: int
+    ):
+        """Заполняет атрибуты фактического ствола."""
+
+        fields = layer.fields()
+
+        if fields.indexOf("id") >= 0:
+            feature["id"] = self._get_next_feature_id(
+                layer
+            )
+
+        if fields.indexOf("type") >= 0:
+            feature["type"] = type
+
+        if fields.indexOf("rel") >= 0:
+            feature["rel"] = True
+
+    def createErrorWellbores(self):
+        """
+        Создаёт четыре траектории неопределённости:
+
+            TOP
+            LEFT
+            DOWN
+            RIGHT
+
+        Координаты исходно находятся в CRS расчёта self.crs
+        и перед добавлением в слой wellbore преобразуются
+        в CRS самого слоя.
+
+        Геометрия:
+            X = EAST
+            Y = NORTH
+            Z = TVDSS
+        """
+
+        # --------------------------------------------------------------
+        # 1. Проверки
+        # --------------------------------------------------------------
+
+        if self.rows < 2:
+            QMessageBox.warning(
+                self.tab,
+                "Внимание",
+                "Для построения траекторий погрешности "
+                "необходимо минимум две точки.",
+            )
+            return False
+
+        if not self.crs.isValid():
+            QMessageBox.warning(
+                self.tab,
+                "Ошибка",
+                "Не определена система координат расчёта.",
+            )
+            return False
+
+        layer_wellbore = self._find_wellbore_layer()
+
+        if layer_wellbore is None:
+            QMessageBox.warning(
+                self.tab,
+                "Ошибка",
+                "Слой wellbore не найден в проекте.",
+            )
+            return False
+
+        crs_layer = layer_wellbore.crs()
+
+        if not crs_layer.isValid():
+            QMessageBox.warning(
+                self.tab,
+                "Ошибка",
+                "Не определена система координат слоя wellbore.",
+            )
+            return False
+
+        # --------------------------------------------------------------
+        # 2. Строим геометрии в CRS расчёта
+        # --------------------------------------------------------------
+
+        geometries = {
+            "TOP": self._build_error_wellbore_geometry(
+                "NORTH_TOP",
+                "EAST_TOP",
+                "TVDSS_TOP",
+            ),
+
+            "LEFT": self._build_error_wellbore_geometry(
+                "NORTH_LEFT",
+                "EAST_LEFT",
+                "TVDSS_LEFT",
+            ),
+
+            "DOWN": self._build_error_wellbore_geometry(
+                "NORTH_DOWN",
+                "EAST_DOWN",
+                "TVDSS_DOWN",
+            ),
+
+            "RIGHT": self._build_error_wellbore_geometry(
+                "NORTH_RIGHT",
+                "EAST_RIGHT",
+                "TVDSS_RIGHT",
+            ),
+        }
+
+        # Проверяем, что все геометрии создались.
+        for name, geometry in geometries.items():
+
+            if geometry is None or geometry.isEmpty():
+                QMessageBox.warning(
+                    self.tab,
+                    "Ошибка",
+                    f"Не удалось построить геометрию "
+                    f"траектории {name}.",
+                )
+                return False
+
+        # --------------------------------------------------------------
+        # 3. Преобразуем CRS
+        # --------------------------------------------------------------
+
+        if self.crs != crs_layer:
+
+            transform = QgsCoordinateTransform(
+                self.crs,
+                crs_layer,
+                QgsProject.instance(),
+            )
+
+            for name, geometry in geometries.items():
+
+                try:
+                    geometry.transform(transform)
+
+                except Exception as exc:
+                    QMessageBox.warning(
+                        self.tab,
+                        "Ошибка",
+                        f"Не удалось преобразовать геометрию "
+                        f"траектории {name} в CRS слоя wellbore:\n"
+                        f"{exc}",
+                    )
+                    return False
+
+        # --------------------------------------------------------------
+        # 4. Переводим слой в режим редактирования
+        # --------------------------------------------------------------
+
+        if not layer_wellbore.isEditable():
+
+            if not layer_wellbore.startEditing():
+                QMessageBox.warning(
+                    self.tab,
+                    "Ошибка",
+                    "Не удалось перевести слой wellbore "
+                    "в режим редактирования.",
+                )
+                return False
+
+        # --------------------------------------------------------------
+        # 5. Получаем следующий ID
+        # --------------------------------------------------------------
+
+        next_id = self._get_next_feature_id(
+            layer_wellbore
+        )
+
+        # --------------------------------------------------------------
+        # 6. Параметры стволов
+        # --------------------------------------------------------------
+
+        trajectory_settings = {
+            "TOP": {
+                "type": 2,
+                "name": "Погрешность — TOP",
+            },
+
+            "LEFT": {
+                "type": 3,
+                "name": "Погрешность — LEFT",
+            },
+
+            "DOWN": {
+                "type": 4,
+                "name": "Погрешность — DOWN",
+            },
+
+            "RIGHT": {
+                "type": 5,
+                "name": "Погрешность — RIGHT",
+            },
+        }
+
+        fields = layer_wellbore.fields()
+
+        # --------------------------------------------------------------
+        # 7. Создаём четыре объекта
+        # --------------------------------------------------------------
+
+        for trajectory_name, geometry in geometries.items():
+
+            feature = QgsFeature(fields)
+
+            feature.setGeometry(geometry)
+
+            settings = trajectory_settings[
+                trajectory_name
+            ]
+
+            if fields.indexOf("id") >= 0:
+                feature["id"] = next_id
+                next_id += 1
+
+            if fields.indexOf("type") >= 0:
+                feature["type"] = settings["type"]
+
+            if fields.indexOf("name") >= 0:
+                feature["name"] = settings["name"]
+
+            if fields.indexOf("rel") >= 0:
+                feature["rel"] = True
+
+            if not layer_wellbore.addFeature(feature):
+
+                layer_wellbore.rollBack()
+
+                QMessageBox.warning(
+                    self.tab,
+                    "Ошибка",
+                    f"Не удалось добавить ствол "
+                    f"{trajectory_name} в слой wellbore.",
+                )
+
+                return False
+
+        # --------------------------------------------------------------
+        # 8. Сохраняем
+        # --------------------------------------------------------------
+
+        if not layer_wellbore.commitChanges():
+
+            layer_wellbore.rollBack()
+
+            QMessageBox.warning(
+                self.tab,
+                "Ошибка",
+                "Не удалось сохранить стволы "
+                "погрешности в слой wellbore.",
+            )
+
+            return False
+
+        # --------------------------------------------------------------
+        # 9. Обновляем отображение
+        # --------------------------------------------------------------
+
+        layer_wellbore.triggerRepaint()
+
+        self._set_layer_visible(
+            layer_wellbore
+        )
+
+        return True

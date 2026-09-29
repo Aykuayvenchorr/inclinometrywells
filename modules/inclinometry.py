@@ -473,18 +473,12 @@ class Inclinometry:
         md2: float,
         a: float,
         b: float,
+        azimuth: float | None = None,
     ) -> list[float]:
         """
-        Рассчитывает четыре крайние точки относительно P2.
+        Рассчитывает четыре крайние точки области ошибки.
 
-        Возвращает:
-
-            north_left,  east_left,  md_left,
-            north_right, east_right, md_right,
-            north_up,    east_up,    md_up,
-            north_down,  east_down,  md_down
-
-        Глубина положительна вниз.
+        azimuth — дирекционный угол в радианах.
         """
 
         d_north = north2 - north1
@@ -492,8 +486,7 @@ class Inclinometry:
         d_depth = md2 - md1
 
         horizontal_length = sqrt(
-            d_north**2
-            + d_east**2
+            d_north**2 + d_east**2
         )
 
         length = sqrt(
@@ -507,106 +500,97 @@ class Inclinometry:
                 "Начальная и конечная точки совпадают."
             )
 
-        if isclose(
-            horizontal_length,
-            0.0,
-            abs_tol=1e-12,
-        ):
-            raise ValueError(
-                "Горизонтальная проекция отрезка равна нулю. "
-                "Невозможно однозначно определить Left и Right."
-            )
+        # ----------------------------------------------------------
+        # ВЕРТИКАЛЬНЫЙ УЧАСТОК
+        # ----------------------------------------------------------
 
-        # --------------------------------------------------------------
-        # LEFT
-        # --------------------------------------------------------------
+        if isclose(horizontal_length, 0.0, abs_tol=1e-12):
+            if azimuth is None:
+                azimuth = 0.0
+
+            sin_az = sin(azimuth)
+            cos_az = cos(azimuth)
+
+            # LEFT
+            north_left = north2 - a * sin_az
+            east_left = east2 + a * cos_az
+            md_left = md2
+
+            # RIGHT
+            north_right = north2 + a * sin_az
+            east_right = east2 - a * cos_az
+            md_right = md2
+
+            # UP — горизонтальное смещение по азимуту
+            north_up = north2 + b * cos_az
+            east_up = east2 + b * sin_az
+            md_up = md2
+
+            # DOWN — противоположное смещение
+            north_down = north2 - b * cos_az
+            east_down = east2 - b * sin_az
+            md_down = md2
+
+            return [
+                north_left, east_left, md_left,
+                north_right, east_right, md_right,
+                north_up, east_up, md_up,
+                north_down, east_down, md_down,
+            ]
+
+        # ----------------------------------------------------------
+        # ОБЫЧНЫЙ УЧАСТОК
+        # ----------------------------------------------------------
 
         north_left = (
-            north2
-            - a * d_east / horizontal_length
+            north2 - a * d_east / horizontal_length
         )
-
         east_left = (
-            east2
-            + a * d_north / horizontal_length
+            east2 + a * d_north / horizontal_length
         )
-
         md_left = md2
 
-        # --------------------------------------------------------------
-        # RIGHT
-        # --------------------------------------------------------------
-
         north_right = (
-            north2
-            + a * d_east / horizontal_length
+            north2 + a * d_east / horizontal_length
         )
-
         east_right = (
-            east2
-            - a * d_north / horizontal_length
+            east2 - a * d_north / horizontal_length
         )
-
         md_right = md2
-
-        # --------------------------------------------------------------
-        # UP
-        # --------------------------------------------------------------
 
         north_up = (
             north2
             - b * d_north * d_depth
             / (length * horizontal_length)
         )
-
         east_up = (
             east2
             - b * d_east * d_depth
             / (length * horizontal_length)
         )
-
         md_up = (
-            md2
-            - b * horizontal_length / length
+            md2 - b * horizontal_length / length
         )
-
-        # --------------------------------------------------------------
-        # DOWN
-        # --------------------------------------------------------------
 
         north_down = (
             north2
             + b * d_north * d_depth
             / (length * horizontal_length)
         )
-
         east_down = (
             east2
             + b * d_east * d_depth
             / (length * horizontal_length)
         )
-
         md_down = (
-            md2
-            + b * horizontal_length / length
+            md2 + b * horizontal_length / length
         )
 
         return [
-            north_left,
-            east_left,
-            md_left,
-
-            north_right,
-            east_right,
-            md_right,
-
-            north_up,
-            east_up,
-            md_up,
-
-            north_down,
-            east_down,
-            md_down,
+            north_left, east_left, md_left,
+            north_right, east_right, md_right,
+            north_up, east_up, md_up,
+            north_down, east_down, md_down,
         ]
 
     # ==================================================================
@@ -625,10 +609,8 @@ class Inclinometry:
         err_a: float,
         err_i: float,
         err_m: float,
+        azimuth: float | None = None,
     ) -> tuple[float, float, list[float]]:
-        """
-        Рассчитывает размеры области ошибки и четыре крайние точки.
-        """
 
         a, b = self.error_ellipse(
             l,
@@ -646,6 +628,7 @@ class Inclinometry:
             md2,
             a,
             b,
+            azimuth,
         )
 
         return a, b, points
