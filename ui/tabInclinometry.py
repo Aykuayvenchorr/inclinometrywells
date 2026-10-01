@@ -687,6 +687,11 @@ class TabInclinometry:
                 IncCol["EAST"],
             )
 
+            tvdss1 = self._get_float(
+                i - 1,
+                IncCol["TVDSS"],
+            )
+
             md1 = self._get_float(
                 i - 1,
                 IncCol["MD"],
@@ -700,6 +705,11 @@ class TabInclinometry:
             east2 = self._get_float(
                 i,
                 IncCol["EAST"],
+            )
+
+            tvdss2 = self._get_float(
+                i,
+                IncCol["TVDSS"],
             )
 
             md2 = self._get_float(
@@ -720,10 +730,10 @@ class TabInclinometry:
             ) = self.inclinometry.calculate_error_points(
                 north1,
                 east1,
-                md1,
+                tvdss1,
                 north2,
                 east2,
-                md2,
+                tvdss2,
                 l,
                 azimuth_error,
                 zenith_error,
@@ -1360,27 +1370,6 @@ class TabInclinometry:
 
         return QgsGeometry(line)
 
-    def _fill_error_wellbore_attributes(
-        self,
-        feature: QgsFeature,
-        layer: QgsVectorLayer,
-        type: int
-    ):
-        """Заполняет атрибуты фактического ствола."""
-
-        fields = layer.fields()
-
-        if fields.indexOf("id") >= 0:
-            feature["id"] = self._get_next_feature_id(
-                layer
-            )
-
-        if fields.indexOf("type") >= 0:
-            feature["type"] = type
-
-        if fields.indexOf("rel") >= 0:
-            feature["rel"] = True
-
     def createErrorWellbores(self):
         """
         Создаёт четыре траектории неопределённости:
@@ -1571,9 +1560,7 @@ class TabInclinometry:
 
             feature.setGeometry(geometry)
 
-            settings = trajectory_settings[
-                trajectory_name
-            ]
+            settings = trajectory_settings[trajectory_name]
 
             if fields.indexOf("id") >= 0:
                 feature["id"] = next_id

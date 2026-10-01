@@ -467,13 +467,13 @@ class Inclinometry:
     def perpendicular_points(
         north1: float,
         east1: float,
-        md1: float,
+        tvdss1: float,
         north2: float,
         east2: float,
-        md2: float,
+        tvdss2: float,
         a: float,
         b: float,
-        azimuth: float | None = None,
+        azimuth = None,
     ) -> list[float]:
         """
         Рассчитывает четыре крайние точки области ошибки.
@@ -481,117 +481,143 @@ class Inclinometry:
         azimuth — дирекционный угол в радианах.
         """
 
-        d_north = north2 - north1
-        d_east = east2 - east1
-        d_depth = md2 - md1
+        # Вектор измеряемого отрезка
+        dx = east2 - east1
+        dy = north2 - north1
+        dz = tvdss2 - tvdss1
 
-        horizontal_length = sqrt(
-            d_north**2 + d_east**2
+        L = sqrt(
+            dx * dx +
+            dy * dy +
+            dz * dz
         )
-
-        length = sqrt(
-            d_north**2
-            + d_east**2
-            + d_depth**2
-        )
-
-        if isclose(length, 0.0, abs_tol=1e-12):
+    
+        if L == 0:
             raise ValueError(
-                "Начальная и конечная точки совпадают."
+                "Длина измеряемого отрезка равна нулю."
+            )
+        # if isclose(L, 0.0, abs_tol=1e-12):
+        #     raise ValueError("Начальная и конечная точки совпадают.")
+    
+        # Горизонтальная проекция
+        H = sqrt(
+            dx * dx +
+            dy * dy
+        )
+    
+        # Направление вдоль ствола
+        t = (
+            dx / L,
+            dy / L,
+            dz / L
+        )
+
+        # RIGHT
+        if H > 1e-12:        
+        # if isclose(H, 0.0, abs_tol=1e-12):        
+            right = (
+                dy / H,
+                -dx / H,
+                0.0
+            )
+        else:
+            # Вертикальный отрезок.
+            # Азимут не определен.
+            right = (
+                1.0,
+                0.0,
+                0.0
             )
 
-        # ----------------------------------------------------------
-        # ВЕРТИКАЛЬНЫЙ УЧАСТОК
-        # ----------------------------------------------------------
-
-        if isclose(horizontal_length, 0.0, abs_tol=1e-12):
-            if azimuth is None:
-                azimuth = 0.0
-
-            sin_az = sin(azimuth)
-            cos_az = cos(azimuth)
-
-            # LEFT
-            north_left = north2 - a * sin_az
-            east_left = east2 + a * cos_az
-            md_left = md2
-
-            # RIGHT
-            north_right = north2 + a * sin_az
-            east_right = east2 - a * cos_az
-            md_right = md2
-
-            # UP — горизонтальное смещение по азимуту
-            north_up = north2 + b * cos_az
-            east_up = east2 + b * sin_az
-            md_up = md2
-
-            # DOWN — противоположное смещение
-            north_down = north2 - b * cos_az
-            east_down = east2 - b * sin_az
-            md_down = md2
-
-            return [
-                north_left, east_left, md_left,
-                north_right, east_right, md_right,
-                north_up, east_up, md_up,
-                north_down, east_down, md_down,
-            ]
-
-        # ----------------------------------------------------------
-        # ОБЫЧНЫЙ УЧАСТОК
-        # ----------------------------------------------------------
-
-        north_left = (
-            north2 - a * d_east / horizontal_length
-        )
-        east_left = (
-            east2 + a * d_north / horizontal_length
-        )
-        md_left = md2
-
-        north_right = (
-            north2 + a * d_east / horizontal_length
-        )
-        east_right = (
-            east2 - a * d_north / horizontal_length
-        )
-        md_right = md2
-
-        north_up = (
-            north2
-            - b * d_north * d_depth
-            / (length * horizontal_length)
-        )
-        east_up = (
-            east2
-            - b * d_east * d_depth
-            / (length * horizontal_length)
-        )
-        md_up = (
-            md2 - b * horizontal_length / length
+        # UP = RIGHT × направление ствола
+        up = (
+            right[1] * t[2] - right[2] * t[1],
+            right[2] * t[0] - right[0] * t[2],
+            right[0] * t[1] - right[1] * t[0]
         )
 
-        north_down = (
-            north2
-            + b * d_north * d_depth
-            / (length * horizontal_length)
+        # Нормализация UP
+        up_length = sqrt(
+            up[0] ** 2 +
+            up[1] ** 2 +
+            up[2] ** 2
         )
-        east_down = (
-            east2
-            + b * d_east * d_depth
-            / (length * horizontal_length)
+
+        up = (
+            up[0] / up_length,
+            up[1] / up_length,
+            up[2] / up_length
         )
-        md_down = (
-            md2 + b * horizontal_length / length
+
+        # LEFT
+        left = (
+            -right[0],
+            -right[1],
+            -right[2]
+        )
+
+        # DOWN
+        down = (
+            -up[0],
+            -up[1],
+            -up[2]
+        )
+
+        # ==========================================
+        # ЦЕНТР ЭЛЛИПСА
+        # ==========================================
+
+        xc = east2
+        yc = north2
+        zc = tvdss2
+
+        # ==========================================
+        # RIGHT
+        # ==========================================
+
+        right_point = (
+            xc + a * right[0],
+            yc + a * right[1],
+            zc + a * right[2]
+        )
+
+        # ==========================================
+        # LEFT
+        # ==========================================
+
+        left_point = (
+            xc - a * right[0],
+            yc - a * right[1],
+            zc - a * right[2]
+        )
+
+        # ==========================================
+        # UP
+        # ==========================================
+
+        up_point = (
+            xc + b * up[0],
+            yc + b * up[1],
+            zc + b * up[2]
+        )
+
+        # ==========================================
+        # DOWN
+        # ==========================================
+
+        down_point = (
+            xc - b * up[0],
+            yc - b * up[1],
+            zc - b * up[2]
         )
 
         return [
-            north_left, east_left, md_left,
-            north_right, east_right, md_right,
-            north_up, east_up, md_up,
-            north_down, east_down, md_down,
+            left_point[1], left_point[0], left_point[2],
+            right_point[1], right_point[0], right_point[2],
+            up_point[1], up_point[0], up_point[2],
+            down_point[1], down_point[0], down_point[2]
         ]
+    
 
     # ==================================================================
     # РАСЧЁТ КРАЙНИХ ТОЧЕК
@@ -601,15 +627,15 @@ class Inclinometry:
         self,
         north1: float,
         east1: float,
-        md1: float,
+        tvdss1: float,
         north2: float,
         east2: float,
-        md2: float,
+        tvdss2: float,
         l: float,
         err_a: float,
         err_i: float,
         err_m: float,
-        azimuth: float | None = None,
+        azimuth = None,
     ) -> tuple[float, float, list[float]]:
 
         a, b = self.error_ellipse(
@@ -622,10 +648,10 @@ class Inclinometry:
         points = self.perpendicular_points(
             north1,
             east1,
-            md1,
+            tvdss1,
             north2,
             east2,
-            md2,
+            tvdss2,
             a,
             b,
             azimuth,

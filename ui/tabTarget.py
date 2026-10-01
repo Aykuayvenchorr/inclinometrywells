@@ -1645,6 +1645,7 @@ class TabTarget:
 
         # Первый свободный ID
         next_id = self._getNextTargetId(layer)
+        rows_data = []
 
         for row in range(table.rowCount()):
             stratum = self._getTableText(row, self.COL_STRATUM)
@@ -1672,6 +1673,7 @@ class TabTarget:
             tvdss = self._toFloatOrNone(tvdss_text)
 
             feature = QgsFeature(layer.fields())
+            target_id = next_id
 
             feature["id"] = next_id
             feature["stratum"] = stratum
@@ -1701,6 +1703,8 @@ class TabTarget:
             feature.setGeometry(geometry)
             features.append(feature)
             next_id += 1
+
+            rows_data.append((row, target_id))
 
         # ---------------------------------
         # Если есть ошибки
@@ -1737,6 +1741,14 @@ class TabTarget:
             return
 
         layer.triggerRepaint()
+        # теперь записываем ID обратно в таблицу
+        for row, target_id in rows_data:
+            self._setTableItem(
+                self.tab.tableTargets,
+                row,
+                self.COL_ID,
+                target_id
+            )
 
         QMessageBox.information(
             self.tab,

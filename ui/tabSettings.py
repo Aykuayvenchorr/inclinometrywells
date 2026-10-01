@@ -516,7 +516,6 @@ class TabSettings:
                 "Ошибка",
                 f"Слой {layer_name} создан, "
                 "но не удалось его загрузить.\n\n"
-                f"Ошибка: {layer.error().message()}",
             )
             return None
 
